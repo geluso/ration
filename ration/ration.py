@@ -77,7 +77,8 @@ class RationApp:
         self.canvas = gtk.DrawingArea()
         self.canvas.set_events(
             gtk.gdk.POINTER_MOTION_MASK | gtk.gdk.POINTER_MOTION_HINT_MASK |
-            gtk.gdk.BUTTON_PRESS_MASK | gtk.gdk.BUTTON_RELEASE_MASK)
+            gtk.gdk.BUTTON_PRESS_MASK | gtk.gdk.BUTTON_RELEASE_MASK |
+            gtk.gdk.KEY_RELEASE_MASK)
         self.window.add(self.canvas)
 
         self.window.connect('destroy', gtk.main_quit)
@@ -190,9 +191,11 @@ class RationApp:
 
         self.mouse_down = None
 
-        window_id, window_name = windows.select_window()
+        self.clear_buffer()
+        self.draw_grid()
+        self.blit_buffer()
 
-        resize_occurred = False
+        window_id, window_name = windows.select_window()
         if window_id != hex(self.window.window.xid)[:-1] and \
             'Edge Panel' not in window_name and \
             'x-nautilus-desktop' != window_name:
@@ -200,16 +203,61 @@ class RationApp:
             if self.selected_boxes == [0, 0, CONFIG['columns'], CONFIG['rows']]:
                 windows.maximize_window(window_id)
             else:
-                windows.resize_window(window_id, *self.new_window_size)
+                self.resize(self.new_window_size, window_id)
+
+        return True
+
+    def resize(self, new_window_size, window_id=None):
+        self.hide()
+
+        if window_id is None:
+          window_id = windows.active_window_id()
+
+        resize_occurred = False
+        if window_id != hex(self.window.window.xid)[:-1]:
+            windows.resize_window(window_id, *new_window_size)
             resize_occurred = True
 
-        self.clear_buffer()
-        self.draw_grid()
-        self.blit_buffer()
+        return True
 
-        if resize_occurred and CONFIG['hide_after_arrangement']:
-            self.hide()
 
+    def resize_fullscreen(self):
+        new_window_size = (CONFIG['left_screen_margin'],
+                           CONFIG['top_screen_margin'],
+                           CONFIG['usable_screen_width'] - CONFIG['right_padding'],
+                           CONFIG['usable_screen_height'] - CONFIG['bottom_padding'])
+        self.resize(new_window_size)
+        return False
+
+
+    def resize_left_half(self):
+        new_window_size = (CONFIG['left_screen_margin'],
+                           CONFIG['top_screen_margin'],
+                           (CONFIG['usable_screen_width']) / 2,
+                           CONFIG['usable_screen_height'] - CONFIG['top_screen_margin'] - CONFIG['bottom_padding'])
+        self.resize(new_window_size)
+        return False
+
+    def resize_right_half(self):
+        new_window_size = ((CONFIG['usable_screen_width']) / 2,
+                           CONFIG['top_screen_margin'],
+                           (CONFIG['usable_screen_width'] - CONFIG['right_padding']) / 2,
+                           CONFIG['usable_screen_height'] - CONFIG['top_screen_margin'] - CONFIG['bottom_padding'])
+        self.resize(new_window_size)
+        return False
+
+    def resize_center(self):
+        new_window_size = (CONFIG['usable_screen_width'] / 4,
+                           CONFIG['usable_screen_height'] / 4,
+                           (CONFIG['usable_screen_width']) / 2,
+                           CONFIG['usable_screen_height'] / 2)
+        self.resize(new_window_size)
+        return False
+
+    def canvas_key_release(self, widget, event):
+        """
+        Invoke a custom premade window arrangement.
+        """
         return True
 
     def update(self, event, selection=True):
@@ -351,6 +399,10 @@ class RationApp:
         """
         keybinder.bind(CONFIG['hotkey'], self.hotkey)
         keybinder.bind(CONFIG['exit_hotkey'], self.hide)
+        keybinder.bind("f", self.resize_fullscreen)
+        keybinder.bind("1", self.resize_left_half)
+        keybinder.bind("2", self.resize_right_half)
+        keybinder.bind("c", self.resize_center)
 
     def unbind_hotkeys(self):
         """
@@ -358,6 +410,10 @@ class RationApp:
         """
         keybinder.unbind(CONFIG['hotkey'])
         keybinder.unbind('Escape')
+        keybinder.unbind("f")
+        keybinder.unbind("1")
+        keybinder.unbind("2")
+        keybinder.unbind("c")
 
 if __name__ == '__main__':
     app = RationApp()

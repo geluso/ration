@@ -58,3 +58,10 @@ def maximize_window(window_id):
     print ' '.join(command)
     p = subprocess.Popen(command, stdout=subprocess.PIPE)
     output = p.communicate()[0]
+
+def active_window_id():
+    command = ['xprop', '-root', '32x', '\t$0', '_NET_ACTIVE_WINDOW']
+    p = subprocess.Popen(command, stdout=subprocess.PIPE)
+    output = p.communicate()[0]
+    window_id = output.split('0x')[1]
+    return '0x' + window_id
