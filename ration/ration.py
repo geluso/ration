@@ -98,6 +98,7 @@ class RationApp:
         self.window.show_all()
 
         self.bind_hotkeys()
+        self.bind_prearrangements()
 
     def go(self):
         """
@@ -226,8 +227,8 @@ class RationApp:
                            CONFIG['top_screen_margin'],
                            CONFIG['usable_screen_width'] - CONFIG['right_padding'],
                            CONFIG['usable_screen_height'] - CONFIG['bottom_padding'])
-        self.resize(new_window_size)
-        return False
+        return self.resize(new_window_size)
+        return True
 
 
     def resize_left_half(self):
@@ -236,7 +237,7 @@ class RationApp:
                            (CONFIG['usable_screen_width']) / 2,
                            CONFIG['usable_screen_height'] - CONFIG['top_screen_margin'] - CONFIG['bottom_padding'])
         self.resize(new_window_size)
-        return False
+        return True
 
     def resize_right_half(self):
         new_window_size = ((CONFIG['usable_screen_width']) / 2,
@@ -244,7 +245,7 @@ class RationApp:
                            (CONFIG['usable_screen_width'] - CONFIG['right_padding']) / 2,
                            CONFIG['usable_screen_height'] - CONFIG['top_screen_margin'] - CONFIG['bottom_padding'])
         self.resize(new_window_size)
-        return False
+        return True
 
     def resize_center(self):
         new_window_size = (CONFIG['usable_screen_width'] / 4,
@@ -252,7 +253,7 @@ class RationApp:
                            (CONFIG['usable_screen_width']) / 2,
                            CONFIG['usable_screen_height'] / 2)
         self.resize(new_window_size)
-        return False
+        return True
 
     def canvas_key_release(self, widget, event):
         """
@@ -378,11 +379,27 @@ class RationApp:
 
     def hide(self):
         self.window.hide()
+        self.unbind_prearrangements()
+
         keybinder.unbind('Escape')
 
     def show(self):
         self.window.show()
+        self.bind_prearrangements()
+
         keybinder.bind('Escape', self.hide)
+
+    def bind_prearrangements(self):
+        keybinder.bind('f', self.resize_fullscreen)
+        keybinder.bind('1', self.resize_left_half)
+        keybinder.bind('2', self.resize_right_half)
+        keybinder.bind('c', self.resize_center)
+
+    def unbind_prearrangements(self):
+        keybinder.unbind('f')
+        keybinder.unbind('1')
+        keybinder.unbind('2')
+        keybinder.unbind('c')
 
     def hotkey(self):
         """
@@ -399,10 +416,6 @@ class RationApp:
         """
         keybinder.bind(CONFIG['hotkey'], self.hotkey)
         keybinder.bind(CONFIG['exit_hotkey'], self.hide)
-        keybinder.bind("f", self.resize_fullscreen)
-        keybinder.bind("1", self.resize_left_half)
-        keybinder.bind("2", self.resize_right_half)
-        keybinder.bind("c", self.resize_center)
 
     def unbind_hotkeys(self):
         """
@@ -410,10 +423,6 @@ class RationApp:
         """
         keybinder.unbind(CONFIG['hotkey'])
         keybinder.unbind('Escape')
-        keybinder.unbind("f")
-        keybinder.unbind("1")
-        keybinder.unbind("2")
-        keybinder.unbind("c")
 
 if __name__ == '__main__':
     app = RationApp()
