@@ -394,11 +394,12 @@ class RationApp:
 
     def show(self):
         screen_resolution = windows.get_screen_resolution()
-        width = screen_resolution[0]
-        height = screen_resolution[1]
 
-        CONFIG['usable_screen_width'] = width
-        CONFIG['usable_screen_height'] = height
+        CONFIG['usable_screen_width'] = screen_resolution[0]
+        CONFIG['usable_screen_height'] = screen_resolution[1]
+
+        width = math.floor(CONFIG['usable_screen_width'] * CONFIG['canvas_scale'] / CONFIG['columns']) * CONFIG['columns'] + 1
+        height = math.floor(CONFIG['usable_screen_height'] * CONFIG['canvas_scale'] / CONFIG['rows']) * CONFIG['rows'] + 1
 
         self.window.set_size_request(int(width), int(height))
 
