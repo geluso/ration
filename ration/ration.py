@@ -27,7 +27,16 @@ CONFIG = {
         'left_screen_margin': 0,
         'top_screen_margin': 0,
         'right_padding': 0,
-        'bottom_padding': 0
+        'bottom_padding': 0,
+        'prearrangements': []
+        #prearrangements=[
+        #  f=0,0,100,100,
+        #  1=0,0,50,50,
+        #  2=50,0,50,50,
+        #  3=0,0,25,100,
+        #  4=75,0,25,100,
+        #  c=25,25,50,50,
+        #]
 }
 
 CONFIG_FILE = os.path.expanduser('~/.ration')
@@ -384,6 +393,15 @@ class RationApp:
         keybinder.unbind('Escape')
 
     def show(self):
+        screen_resolution = windows.get_screen_resolution()
+        width = screen_resolution[0]
+        height = screen_resolution[1]
+
+        CONFIG['usable_screen_width'] = width
+        CONFIG['usable_screen_height'] = height
+
+        self.window.set_size_request(int(width), int(height))
+
         self.window.show()
         self.bind_prearrangements()
 
